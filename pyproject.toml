@@ -2,7 +2,6 @@
 name = "playground1"
 version = "0.1.0"
 description = "Tool Router Model - Mamba-based tool routing for MCP tasks"
-readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     # 核心深度学习框架
@@ -49,9 +48,16 @@ dev = [
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.hatchling.build.targets.wheel]
+# 包含 src/playground1 包
+packages = ["src/playground1"]
+
 [tool.uv]
-# uv 特定配置
-dev-dependencies = [
+# uv 特定配置（已移除 dev-dependencies，使用 dependency-groups 代替）
+
+[dependency-groups]
+# 开发依赖组（uv 新格式）
+dev = [
     "pytest>=7.0.0",
     "black>=23.0.0",
     "ruff>=0.1.0",

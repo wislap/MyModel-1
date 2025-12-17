@@ -1,0 +1,12 @@
+# 完整依赖（包含所有可选依赖）
+# 安装方式: pip install -r requirements-all.txt
+
+# 包含基础依赖
+-r requirements.txt
+
+# 8-bit 优化器（仅 CUDA，ROCm 不支持）
+bitsandbytes>=0.49.0
+
+# 模型下载（ModelScope，主要用于中国用户）
+modelscope>=1.9.0
+
