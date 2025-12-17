@@ -1,0 +1,86 @@
+{
+  "model": {
+    "embedding": {
+      "path": "",
+      "comment": "embedding 模型路径，为空则初始化新模型，填写 safetensors 文件路径则加载已有模型",
+      "embedding_dim": 768,
+      "vocab_size": null,
+      "padding_idx": null,
+      "init_from_pretrained": false,
+      "cache_dir": "./embeddings_cache",
+      "comment2": "init_from_pretrained: false=随机初始化(推荐), true=从预训练模型加载(会下载模型，不推荐)"
+    },
+    "mamba": {
+      "d_model": 768,
+      "n_layers": 4,
+      "d_state": 16,
+      "expand": 2,
+      "share_encoder": false,
+      "comment": "share_encoder: true=共享Query和Tool Encoder(更快但可能影响性能), false=独立编码器, n_layers和d_state已减少以降低显存占用"
+    },
+    "router": {
+      "comment": "使用相似度匹配模式（固定）"
+    }
+  },
+  "tokenizer": {
+    "model_name": "Qwen/Qwen3-8B",
+    "local_dir": "./tokenizers",
+    "trust_remote_code": true
+  },
+  "training": {
+    "max_length": 1024,
+    "truncation": true,
+    "padding": "max_length",
+    "train_size": null,
+    "comment": "train_size: 训练样本数量，null=使用全部数据，数字=限制样本数量（用于快速测试）",
+    "learning_rate": 1e-4,
+    "comment_lr": "learning_rate: 大幅降低到5e-5以解决每轮损失上升问题，如果仍然上升，可以进一步降低到1e-5",
+    "gradient_clip_norm": 1.0,
+    "comment_gradient_clip_update": "gradient_clip_norm: 降低到1.0以更严格地防止梯度爆炸，解决损失上升问题",
+    "comment_gradient_clip": "gradient_clip_norm: 梯度裁剪阈值，null=不裁剪，数字=裁剪到该范数（1.0可能太严格，建议5.0-10.0）",
+    "temperature": 1.0,
+    "comment_temperature": "temperature: 温度缩放，1.0=不缩放（更稳定），0.5=放大差异（可能不稳定）",
+    "lr_scheduler": {
+      "enabled": true,
+      "type": "linear",
+      "comment": "type: cosine=余弦退火, linear=线性衰减, constant=固定学习率",
+      "warmup_steps": 0,
+      "warmup_ratio": 0.1,
+      "comment2": "warmup_steps: 预热步数（优先使用）, warmup_ratio: 预热比例（如果warmup_steps=0）",
+      "min_lr": 5e-6,
+      "comment3": "min_lr: 最小学习率（用于cosine和linear）"
+    },
+    "precision": "amp-fp16",
+    "comment2": "precision: fp32=全精度(ROCm推荐), amp-fp16=混合精度fp16(ROCm可能不稳定), amp-bf16=混合精度bf16",
+    "device": "auto",
+    "comment_device": "device: auto=自动检测, cuda=强制使用GPU(CUDA), rocm=强制使用GPU(ROCm), cpu=强制使用CPU",
+    "checkpoint_dir": "./checkpoints",
+    "checkpoint_name": "router_model",
+    "resume": true,
+    "comment3": "resume: true=自动从checkpoint恢复训练, false=从头开始训练（建议在损失上升时设为false）",
+    "num_epochs": 15,
+    "batch_size": 4,
+    "gradient_accumulation_steps": 2,
+    "comment5": "gradient_accumulation_steps: 梯度累积步数，有效batch_size = batch_size × gradient_accumulation_steps，增加以稳定训练",
+    "use_8bit_optimizer": false,
+    "comment6": "use_8bit_optimizer: true=使用8-bit优化器(节省~1GB显存，需要安装bitsandbytes), false=使用标准Adam",
+    "eval_interval": 5,
+    "comment4": "eval_interval: 每N个epoch评估一次",
+    "precompute_tokens": true,
+    "comment7": "precompute_tokens: true=预计算tokenization(加速数据加载，需要更多内存), false=实时tokenize"
+  },
+  "dataset": {
+    "name": "./converted_dataset.json",
+    "comment": "数据集名称或本地 JSON 文件路径，支持 HuggingFace datasets 库中的数据集或本地 JSON 文件",
+    "comment2": "使用工具匹配模式（固定），数据格式: {\"query\": str, \"tool_description\": str, \"label\": int}"
+  },
+  "evaluation": {
+    "top_k": 5,
+    "comment": "top_k: Top-k准确率评估的k值"
+  },
+  "inference": {
+    "test_text": null,
+    "comment": "test_text: 测试文本，null=使用数据集中的样本，字符串=使用指定文本"
+  }
+}
+
